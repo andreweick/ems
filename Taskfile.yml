@@ -1,0 +1,27 @@
+version: '3'
+
+tasks:
+  build:
+    desc: "Build EMS"
+    cmds:
+      - go build -o bin/ems
+    silent: true
+
+  test:
+    desc: "run all the unit tests"
+    cmds:
+      - go test -v ./...
+    silent: true
+
+  lint:
+    desc: "lint the code"
+    cmds:
+      - golangci-lint run
+    silent: true
+
+  clean:
+    desc: "clean and clear"
+    cmds:
+      - rm -f bin/ems ems.db
+    silent: true
+
