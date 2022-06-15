@@ -11,9 +11,10 @@ func initializeRouter() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/photographs", GetPhotographs).Methods("GET")
-	r.HandleFunc("/photographs/{id}", GetPhotograph).Methods("GET")
+	r.HandleFunc("/photograph/{id}", GetPhotograph).Methods("GET")
 	r.HandleFunc("/photographs", CreatePhotograph).Methods("POST")
 	r.HandleFunc("/photographs/{id}", UpdatePhotograph).Methods("PUT")
+	r.HandleFunc("/photographs", UpdatePhotographs).Methods("PUT")
 	r.HandleFunc("/photographs/{id}", DeletePhotographs).Methods("DELETE")
 
 	// Bookmarks
@@ -34,6 +35,6 @@ func initializeRouter() {
 }
 
 func main() {
-	InitalMigration()
+	InitialMigration()
 	initializeRouter()
 }
