@@ -82,9 +82,20 @@ func InitialMigration() {
 		panic(err)
 	}
 
-	DB.AutoMigrate(&Photograph{})
-	DB.AutoMigrate(&Bookmark{})
-	DB.AutoMigrate(&Chatter{})
+	err = DB.AutoMigrate(&Photograph{})
+	if err != nil {
+		panic(err)
+	}
+
+	err = DB.AutoMigrate(&Bookmark{})
+	if err != nil {
+		panic(err)
+	}
+
+	err = DB.AutoMigrate(&Chatter{})
+	if err != nil {
+		panic(err)
+	}
 }
 
 func GetPhotographs(w http.ResponseWriter, r *http.Request) {

@@ -4,7 +4,8 @@ tasks:
   build:
     desc: "Build EMS"
     cmds:
-      - go build -o bin/ems
+      - go build -o bin/ems-server
+      - go build -o bin/ems-cli cmd/ems-cli/ems.go
     silent: true
 
   test:
@@ -13,15 +14,10 @@ tasks:
       - go test -v ./...
     silent: true
 
-  lint:
-    desc: "lint the code"
-    cmds:
-      - golangci-lint run
-    silent: true
 
   clean:
     desc: "clean and clear"
     cmds:
-      - rm -f bin/ems ems.db
+      - rm -f bin/ems-server bin/ems-cli ems.db
     silent: true
 
