@@ -4,7 +4,14 @@ package cloudflare
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
+	"github.com/corona10/goimagehash"
 	"github.com/missionfocus/ems/internal"
+	"github.com/rwcarlsen/goexif/exif"
+	"github.com/rwcarlsen/goexif/tiff"
+	"image/jpeg"
 	"io"
 	"log"
 	"mime/multipart"
@@ -16,6 +23,29 @@ import (
 	"time"
 )
 
+type MetaData struct {
+	Id             string    `json:"id"`
+	CaptureDate    time.Time `json:"CaptureDate"`
+	Headline       string    `json:"Headline"`
+	Description    string    `json:"Description"`
+	Sha256         string    `json:"Sha256"`
+	PerceptualHash string    `json:"PerceptualHash"`
+}
+
+func GetCleanExifValue(md *tiff.Tag) string {
+	if md == nil {
+		return ""
+	}
+	s := fmt.Sprintf("%v", md)
+
+	if len(s) > 0 && s[0] == '"' {
+		s = s[1:]
+	}
+	if len(s) > 0 && s[len(s)-1] == '"' {
+		s = s[:len(s)-1]
+	}
+	return s
+}
 func Add(path string) {
 	config, err := internal.LoadConfig()
 
@@ -38,15 +68,17 @@ func Add(path string) {
 			time.Sleep(1 * time.Second) // give cloudflare a second
 
 			if !fi.IsDir() && strings.HasSuffix(fi.Name(), "jpg") {
-				AddFile(path+fi.Name(), &config)
+				AddCloudflare(path+fi.Name(), &config)
+				AddMetadata(path + fi.Name())
 			}
 		}
 	} else {
-		AddFile(path, &config)
+		AddCloudflare(path, &config)
+		AddMetadata(path)
 	}
 }
 
-func AddFile(path string, config *internal.Config) {
+func AddCloudflare(path string, config *internal.Config) {
 	dir, filename := filepath.Split(path)
 	extension := filepath.Ext(filename)
 	cloudflareId := strings.TrimSuffix(filename, extension)
@@ -122,7 +154,70 @@ func AddFile(path string, config *internal.Config) {
 		fileResult.ReadFrom(bodyJson)
 		fileResult.Close()
 	}
+}
+
+func AddMetadata(path string) {
+	dir, filename := filepath.Split(path)
+	extension := filepath.Ext(filename)
+	cloudflareId := strings.TrimSuffix(filename, extension)
 
 	// Write photograph metadata
-	
+	fileExifBytes, err := os.Open(path)
+	if err != nil {
+		log.Fatalf("Cannot open for Exif reading: %s\n", path)
+	}
+
+	x, err := exif.Decode(fileExifBytes)
+	if err != nil {
+		log.Fatalf("Cannot decode Exif bytes: %s\n", path)
+	}
+
+	var pmd = new(MetaData)
+
+	pmd.Id = cloudflareId
+
+	pmd.CaptureDate, err = x.DateTime()
+	if err != nil {
+		log.Printf("Cannot read DateTime from %s\n", path)
+	}
+
+	exifValueDescription, _ := x.Get(exif.ImageDescription)
+	pmd.Description = GetCleanExifValue(exifValueDescription)
+
+	// Need to rewind the file again to get the sha256
+	_, err = fileExifBytes.Seek(0, io.SeekStart)
+	if err != nil {
+		log.Fatalf("Cannot rewind file %s\n", path)
+	}
+
+	h := sha256.New()
+	if _, err := io.Copy(h, fileExifBytes); err != nil {
+		log.Fatalf("cannot get sha256 from %s\n", path)
+	}
+	pmd.Sha256 = fmt.Sprintf("%x", h.Sum(nil))
+
+	// Perceptual hash (and yet another rewind of the file)
+	_, err = fileExifBytes.Seek(0, io.SeekStart)
+	if err != nil {
+		log.Fatalf("Cannot rewind file (perceptual hash) %s\n", path)
+	}
+	img1, _ := jpeg.Decode(fileExifBytes)
+
+	phash, _ := goimagehash.PerceptionHash(img1)
+	pmd.PerceptualHash = fmt.Sprintf("%x", phash.GetHash())
+
+	err = fileExifBytes.Close()
+	if err != nil {
+		log.Fatalf("Cannot close file after perceptual hash: %s\n", path)
+	}
+
+	fileResult, err := os.Create(filepath.Join(dir, cloudflareId+"-metadata.json"))
+	if err != nil {
+		log.Fatalf("Could not create file %s\n%v\n", filepath.Join(dir, cloudflareId+"-metadata.json"), err.Error())
+	}
+
+	jsonString, _ := json.MarshalIndent(pmd, "", "  ")
+	fileResult.Write(jsonString)
+
+	fileResult.Close()
 }

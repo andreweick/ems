@@ -18,5 +18,6 @@ tasks:
     desc: "clean and clear"
     cmds:
       - rm -f bin/ems
+      - rm -f testdata/*.json
     silent: true
 
