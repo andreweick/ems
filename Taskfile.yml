@@ -4,8 +4,7 @@ tasks:
   build:
     desc: "Build EMS"
     cmds:
-      - go build -o bin/ems-server
-      - go build -o bin/ems-cli cmd/ems-cli/ems.go
+      - go build -o bin/ems main.go
     silent: true
 
   test:
@@ -18,6 +17,6 @@ tasks:
   clean:
     desc: "clean and clear"
     cmds:
-      - rm -f bin/ems-server bin/ems-cli ems.db
+      - rm -f bin/ems
     silent: true
 
