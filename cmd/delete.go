@@ -5,7 +5,7 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
+	"github.com/missionfocus/ems/pkg/cloudflare"
 
 	"github.com/spf13/cobra"
 )
@@ -16,11 +16,11 @@ var deleteCmd = &cobra.Command{
 	Short: "Delete photos or videos",
 	Long: `Delete content from Eick.com Managment System.  Delete from both the blob and database store.
 
-$ ems delete ~/edc/photomechanic/file1.jpg  # Delete file1.jpg
-$ ems update ~/edc/photomechanic/file1.jpg  # Update file1.jpg
+$ ems delete ~/edc/photomechanic/file1.jpg  # Delete file1.jpg from cloudflare
+$ ems delete ~/edc/photomechanic/           # Delete all files from cloudflare
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("delete called")
+		feedDelete(args[0])
 	},
 }
 
@@ -36,4 +36,8 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// deleteCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func feedDelete(filename string) {
+	cloudflare.Delete(filename)
 }

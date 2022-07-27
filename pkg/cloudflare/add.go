@@ -46,6 +46,7 @@ func GetCleanExifValue(md *tiff.Tag) string {
 	}
 	return s
 }
+
 func Add(path string) {
 	config, err := internal.LoadConfig()
 
@@ -68,8 +69,10 @@ func Add(path string) {
 			time.Sleep(1 * time.Second) // give cloudflare a second
 
 			if !fi.IsDir() && strings.HasSuffix(fi.Name(), "jpg") {
-				AddCloudflare(path+fi.Name(), &config)
-				AddMetadata(path + fi.Name())
+				log.Printf("Adding %s\n", filepath.Join(path, fi.Name()))
+
+				AddCloudflare(filepath.Join(path, fi.Name()), &config)
+				AddMetadata(filepath.Join(path, fi.Name()))
 			}
 		}
 	} else {
@@ -128,7 +131,6 @@ func AddCloudflare(path string, config *internal.Config) {
 	}
 
 	bearer := "Bearer " + config.CfImagesStreamReadWrite
-
 	req.Header.Set("Authorization", bearer)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
