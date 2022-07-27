@@ -1,0 +1,37 @@
+type Photo {
+    id: ID
+    metaData: PhotoMetaData
+    artifact: Artifact
+}
+
+type PhotoMetaData {
+    id: ID
+    CaptureDate: String
+    Headline: String
+    Description: String
+    Sha256: String
+    PerceptualHash: String
+}
+
+type Artifact {
+    id:ID
+    filename: String
+    uploaded: String
+    requireSignedURLs: Boolean
+    artifactUrl: ArtifactUrl
+}
+
+type ArtifactUrl {
+    w1280s: String
+    w320: String
+    square150: String
+    w640: String
+    w960: String
+    w960signed: String
+    w1920: String
+    square200: String
+    public: String
+    square100: String
+    w2560: String
+    w1280: String
+}
