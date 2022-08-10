@@ -47,7 +47,7 @@ func GetCleanExifValue(md *tiff.Tag) string {
 	return s
 }
 
-func Add(path string) {
+func Add(path string, addToCloudflare bool, extractMetadata bool) {
 	config, err := internal.LoadConfig()
 
 	if err != nil {
@@ -66,13 +66,18 @@ func Add(path string) {
 			log.Printf("err: %x", err)
 		}
 		for _, fi := range files {
-			time.Sleep(1 * time.Second) // give cloudflare a second
+			time.Sleep(1 * time.Second) // give cloudflare a second to catch up
 
 			if !fi.IsDir() && strings.HasSuffix(fi.Name(), "jpg") {
 				log.Printf("Adding %s\n", filepath.Join(path, fi.Name()))
 
-				AddCloudflare(filepath.Join(path, fi.Name()), &config)
-				AddMetadata(filepath.Join(path, fi.Name()))
+				if addToCloudflare == true {
+					AddCloudflare(filepath.Join(path, fi.Name()), &config)
+				}
+
+				if extractMetadata == true {
+					AddMetadata(filepath.Join(path, fi.Name()))
+				}
 			}
 		}
 	} else {

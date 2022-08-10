@@ -19,7 +19,9 @@ $ ems add ~/edc/photomechanic/file1.jpg
 $ ems add ~/edc/photomechanic/*.jpg # Add all files in ~/edc/photomechanic
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		feedAdd(args[0])
+		addToCloudflare, _ := cmd.Flags().GetBool("cloudflare")
+		extractMetadata, _ := cmd.Flags().GetBool("metadata")
+		feedAdd(args[0], addToCloudflare, extractMetadata)
 	},
 }
 
@@ -34,9 +36,10 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// addCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	addCmd.Flags().BoolP("cloudflare", "c", false, "Add object to cloudflare")
+	addCmd.Flags().BoolP("metadata", "m", false, "Extract metadata into json object")
 }
 
-func feedAdd(filename string) {
-	cloudflare.Add(filename)
+func feedAdd(filename string, addToCloudflare bool, extractMetadata bool) {
+	cloudflare.Add(filename, addToCloudflare, extractMetadata)
 }
