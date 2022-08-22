@@ -1,30 +1,28 @@
 type Photo {
-    captureDate: String!
-    headline: String
-    description: String
-    sha256: String!
-    perceptualHash: String!
-    filename: String!
-    uploaded: String!
-    requireSignedURLs: Boolean!
-    public: String!
-    square100: String!
-    square150: String!
-    square200: String!
-    w320: String!
-    w640: String!
-    w960: String!
-    w960signed: String!
-    w1920: String!
-    w1280: String!
-    w1280s: String!
-    w2560: String!
+  cfid: String!
+  filename: String!
+  captureDTG: Time!
+  caption: String
+  description: String
+  sha256: String
+  perceptualHash: String
+  uploadDTG: Time
+  public: String
+  square100: String!
+  square150: String!
+  square200: String!
+  w320: String!
+  w640: String!
+  w960: String!
+  w1920: String!
+  w1280: String!
+  w2560: String!
+  w960signed: String
+  w1280s: String
+  requireSignedURLs: Boolean
 }
 
 type Query {
-    allPhotos: [Photo!]
-}
-
-type Query {
-    findPhotoByName: [Photo!]
+  allPhotos: [Photo!]
+  photoByCfid(cfid: String!): [Photo!]
 }
