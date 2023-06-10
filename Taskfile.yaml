@@ -13,7 +13,6 @@ tasks:
       - go test -v ./...
     silent: true
 
-
   clean:
     desc: "clean and clear"
     cmds:
